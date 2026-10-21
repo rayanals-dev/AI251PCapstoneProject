@@ -1,0 +1,29 @@
+
+seed: 42                     # same seed -> same split, same initial weights, same shuffling
+
+
+wandb:
+  use: true                  # false -> nothing is logged, everything still runs
+  entity: "rayan-alsulami-kaust"         # the W&B TEAM name - every member must be invited to it
+  project: "AI251PCapstoneProject"
+  tags: [cls-scratch, cls-frozen, cls-full]   # the only tags start_run accepts
+  test_tag: #choose tag     
+
+data:
+  dataset: ""                # dataset name
+  csv: "src/"        # one row per image: path (relative to data_root), label, split
+  data_root: "data"
+  raw_dir: "raw"             # -> data/raw
+  clean_dir: "clean"         # -> data/clean
+  splits_dir: "splits"       # -> data/splits
+
+outputs:
+  checkpoints_dir: "checkpoints"
+  runs_dir: "runs"
+
+
+train:
+  image_size: 224
+  batch_size: 32
+  epochs: 10
+  lr: 0.001
