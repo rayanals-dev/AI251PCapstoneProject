@@ -15,6 +15,22 @@ Every number below is the mean ± std over 3 seeds (42, 43, 44). The Adjusted co
 
 The test set has only 13 independent groups, so the raw macro-F1 of the selected model has a wide 95% group-bootstrap CI: **0.570–0.837**. With that width, the ranking between M4 and M2 is suggestive, not conclusive.
 
+### Sensitivity: test without the SeaDronesSee `rgb` stills
+
+41% of the test crops (5,549) come from one SeaDronesSee group, `rgb`. It holds 20 MP still photos, a capture type that appears nowhere in train or val, and it shares no images with them (checked 24 Oct, see `data/README.md`). These stills turn out to be the easiest part of the test, so we also report the test score without them.
+
+This table was computed from the saved Step 8 predictions. The models were not re-run, and nothing was tuned on test.
+
+| Model (raw macro-F1, 3 seeds) | All test | Test without `rgb` | Sea: `rgb` stills only | Sea: test videos only |
+|---|---|---|---|---|
+| **M4 Full fine-tune, lr 0.002** | 0.733 | **0.679** | 0.887 | 0.770 |
+| M4 Full fine-tune, lr 0.001 | 0.719 | 0.666 | 0.885 | 0.770 |
+| M2 SmallCNN from scratch | 0.702 | 0.655 | 0.863 | 0.797 |
+| M3 ResNet18 frozen | 0.652 | 0.635 | 0.775 | 0.753 |
+
+- The model ranking is the same with or without `rgb`.
+- On sea video frames alone, the from-scratch SmallCNN matches or beats full fine-tuning (0.797 vs 0.770 raw, 0.824 vs 0.777 adjusted). The ImageNet advantage at sea comes mainly from the high-resolution stills.
+
 ## Validation (used for every choice)
 
 | Model | Macro-F1 (raw) | Macro-F1 (adjusted) |
