@@ -1,0 +1,56 @@
+# Track 1, M2: SmallCNN trained from scratch (baseline).
+# Exported from checkpoint 2026-10-23_cls-scratch-64-s42_v1.pt.
+# Reported runs: seeds 42/43/44, 64 px. data_root is the team Drive folder in Colab; change it for another machine.
+# W&B key comes from Colab Secrets (WANDB_API_KEY), never from this file.
+run:
+  name: cls-scratch
+  tags:
+  - cls-scratch
+  - track1
+  - phase1
+  wandb_project: ai251p-capstone
+  wandb_entity: null
+seeds:
+- 42
+- 43
+- 44
+data:
+  data_root: /content/drive/MyDrive/AI251P_Capstone_CrossDomainAerial
+  crops_dir: 01_Data/Processed/Crops
+  crops_version: latest
+  img_sizes:
+  - 64
+  balance_power: 0.5
+  gpu_aug: true
+  num_workers: 2
+model:
+  name: SmallCNN
+  width: 32
+  dropout: 0.3
+train:
+  epochs: 40
+  batch_size: 256
+  lr: 0.002
+  backbone_lr_factor: 1.0
+  weight_decay: 0.0005
+  warmup_epochs: 2
+  early_stop_patience: 8
+  label_smoothing: 0.05
+  class_loss_boost:
+    truck: 1.0
+    bus: 1.0
+  amp: true
+  select_metric: val_macro_f1
+  resume: true
+logit_adjust:
+  enabled: true
+  grid:
+  - -2.0
+  - 2.0
+  - 0.1
+  passes: 3
+sanity:
+  overfit_batch: 64
+  overfit_steps: 300
+output:
+  dir: 02_Classification
