@@ -1,0 +1,43 @@
+# LR check for cls-full (64 px, seed 42), done 23 Oct. Kept for reproducibility; lr 0.001 was the main run then. Same keys for cls_scratch / cls_frozen / cls_full.
+# Paths below are relative to DRIVE_PROJECT, set once in section 0 of the notebook.
+run:
+  name: cls-full
+  tags: [cls-full, track1, phase1]
+  wandb_project: ai251p-capstone
+  wandb_entity: null          # null = your own W&B account; team entity: <ENTITY>
+seeds: [42]
+data:
+  data_root: null             # null = DRIVE_PROJECT from the notebook (the only Drive path)
+  crops_dir: 01_Data/Processed/Crops
+  crops_version: latest
+  img_sizes: [64]             # 64 selected (23 Oct); [64, 96] = one run per size (crops are stored at 96)
+  balance_power: 0.5          # sampler weight 1/n_c**p: 0 none, 0.5 sqrt (Step 5), 0.75 stronger, 1 full balance
+  gpu_aug: true               # crops in RAM + augmentation on the GPU (fast); false = CPU DataLoader as in Step 5
+  num_workers: 2              # CPU DataLoader only
+model:
+  name: resnet18
+  weights: IMAGENET1K_V1
+  mode: full                  # everything trained; backbone at lr * backbone_lr_factor
+  dropout: 0.2
+train:
+  epochs: 25
+  batch_size: 256
+  lr: [0.0005, 0.002]          # a list = LR check: one run per value, "-lr<value>" in the run name
+  backbone_lr_factor: 0.1
+  weight_decay: 0.0001
+  warmup_epochs: 1
+  early_stop_patience: 6
+  label_smoothing: 0.05
+  class_loss_boost: {truck: 1.0, bus: 1.0}   # extra CE weight on top of the sampler; 1.0 = off
+  amp: true
+  select_metric: val_macro_f1 # model chosen on VAL; test untouched until Step 8
+  resume: true                # save model/optimizer/scheduler/scaler every epoch and continue after a disconnect
+logit_adjust:
+  enabled: true               # after training: per-class logit bias tuned on VAL macro-F1, applied unchanged to test in Step 8
+  grid: [-2.0, 2.0, 0.1]      # bias range and step
+  passes: 3
+sanity:
+  overfit_batch: 64
+  overfit_steps: 300
+output:
+  dir: 02_Classification

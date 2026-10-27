@@ -1,54 +1,40 @@
-# Track 1, M3: ResNet18 ImageNet, frozen backbone, linear head (baseline).
-# Exported from checkpoint 2026-10-23_cls-frozen-64-s42_v1.pt.
-# Reported runs: seeds 42/43/44, 64 px. data_root is the team Drive folder in Colab; change it for another machine.
-# W&B key comes from Colab Secrets (WANDB_API_KEY), never from this file.
+# Track 1 classification config, Step 6 (cls-frozen). Same keys for cls_scratch / cls_frozen / cls_full.
+# Paths below are relative to DRIVE_PROJECT, set once in section 0 of the notebook.
 run:
   name: cls-frozen
-  tags:
-  - cls-frozen
-  - track1
-  - phase1
+  tags: [cls-frozen, track1, phase1]
   wandb_project: ai251p-capstone
-  wandb_entity: null
-seeds:
-- 42
-- 43
-- 44
+  wandb_entity: null          # null = your own W&B account; team entity: <ENTITY>
+seeds: [42, 43, 44]           # team agreement 23 Oct: 3 seeds -> mean +- std
 data:
-  data_root: /content/drive/MyDrive/AI251P_Capstone_CrossDomainAerial
+  data_root: null             # null = DRIVE_PROJECT from the notebook (the only Drive path)
   crops_dir: 01_Data/Processed/Crops
   crops_version: latest
-  img_sizes:
-  - 64
-  balance_power: 0.5
-  gpu_aug: true
-  num_workers: 2
+  img_sizes: [64]             # 64 selected (23 Oct); [64, 96] = one run per size (crops are stored at 96)
+  balance_power: 0.5          # sampler weight 1/n_c**p: 0 none, 0.5 sqrt (Step 5), 0.75 stronger, 1 full balance
+  gpu_aug: true               # crops in RAM + augmentation on the GPU (fast); false = CPU DataLoader as in Step 5
+  num_workers: 2              # CPU DataLoader only
 model:
   name: resnet18
   weights: IMAGENET1K_V1
-  mode: frozen
+  mode: frozen                # only the new head is trained; backbone and its BatchNorm fixed
   dropout: 0.2
 train:
   epochs: 20
   batch_size: 256
   lr: 0.001
-  backbone_lr_factor: 0.0
+  backbone_lr_factor: 0.0     # frozen: backbone not trained
   weight_decay: 0.0001
   warmup_epochs: 1
   early_stop_patience: 5
   label_smoothing: 0.05
-  class_loss_boost:
-    truck: 1.0
-    bus: 1.0
+  class_loss_boost: {truck: 1.0, bus: 1.0}   # extra CE weight on top of the sampler; 1.0 = off
   amp: true
-  select_metric: val_macro_f1
-  resume: true
+  select_metric: val_macro_f1 # model chosen on VAL; test untouched until Step 8
+  resume: true                # save model/optimizer/scheduler/scaler every epoch and continue after a disconnect
 logit_adjust:
-  enabled: true
-  grid:
-  - -2.0
-  - 2.0
-  - 0.1
+  enabled: true               # after training: per-class logit bias tuned on VAL macro-F1, applied unchanged to test in Step 8
+  grid: [-2.0, 2.0, 0.1]      # bias range and step
   passes: 3
 sanity:
   overfit_batch: 64
