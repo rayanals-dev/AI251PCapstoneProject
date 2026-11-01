@@ -1,6 +1,6 @@
 # Track 1 Dataset Card
 
-Abdulmohsen Alharthi (Track 1, Data & Classification) · last updated 27 Oct 2026 · Phase 1
+Abdulmohsen Alharthi (Track 1, Data & Classification) · last updated 1 Nov 2026 · Phase 2
 
 This card describes the data used for Track 1 (aerial object classification, Phase 1): two public datasets cut into object crops, plus a private mountain-road test set from Al-Hada.
 
@@ -9,10 +9,10 @@ This card describes the data used for Track 1 (aerial object classification, Pha
 | Dataset | Domain | What we used | Licence | Source |
 | --- | --- | --- | --- | --- |
 | SeaDronesSee, Object Detection v2 | Sea (search and rescue) | 39 video groups (flights) plus 2 still-image groups; train and val annotations (14,227 images on disk) | CC0 | [seadronessee.cs.uni-tuebingen.de](https://seadronessee.cs.uni-tuebingen.de/dataset) |
-| UAVDT Benchmark-M | Urban roads | 50 sequences, 40,735 frames, sampled at 5 fps; per-sequence attributes (weather, altitude, view) | Research use, per authors | [UAVDT project page](https://sites.google.com/view/grli-uavdt/) |
+| UAVDT Benchmark-M | Urban roads | 50 sequences, 40,735 frames in the release; 40,733 after removing 2 exact duplicate frames (used in every split); sampled at 5 fps; per-sequence attributes (weather, altitude, view) | Research use, per authors | [UAVDT project page](https://sites.google.com/view/grli-uavdt/) |
 | Al-Hada road (ours) | Mountain road | 2 iPhone clips from public viewpoints above the road, 312 frames at 1 fps; held-out test only, never trained on | Private, owner only | Not public |
 
-The proposal quoted 100 UAVDT sequences and 80K frames (the full benchmark). We use Benchmark-M only: 50 sequences, 40,735 frames.
+The proposal quoted 100 UAVDT sequences and 80K frames (the full benchmark). We use Benchmark-M only: 50 sequences, 40,735 frames in the release; 40,733 after removing 2 exact duplicate frames (used in every split).
 
 ## Classes and composition
 
@@ -149,6 +149,7 @@ Al-Hada is a held-out test of a domain none of the training data covers: a steep
 
 **Limitations of this set:**
 
+- the far road in CLIP01 is not labelled. It is covered by an ignore region (`01_Data/Team_AlHada/2026-10-30_CLIP01_IgnoreRegion.json`); 0 of the 8,060 labelled CLIP01 boxes fall inside it. This affects detector precision only; recall is not affected;
 - traffic was light;
 - trucks are few and buses rare;
 - the HDR footage loses contrast.
@@ -171,15 +172,15 @@ Al-Hada is a held-out test of a domain none of the training data covers: a steep
 
 The plan has seven actions, ordered by expected gain. Every one starts from a measured problem. The first two need no new data and can be reported in Phase 1. None of them uses test results to tune the model: test scores are only re-reported under corrected labels or explicit size limits, next to the original score.
 
-| # | Problem (evidence) | Action | When |
-| --- | --- | --- | --- |
-| 1 | **Label errors in test.** 13 of the 50 most confident errors are wrong labels: trucks labelled car in M0208 and M1303, a jetski labelled boat, a boat labelled swimmer | Relabel these 6 objects. Audit every test truck and bus track blind to predictions. Report the score with original and with cleaned labels | Phase 1 (report both); full audit Phase 2 |
-| 2 | **Crops too small to judge.** 21 of 50 errors could not be classified by either rater, most under 15 px; 160/249 test buses are under 32 px with recall 0 | Report test metrics by size bin, plus a score that excludes crops under 16 px as an "ignore" region (standard practice in aerial benchmarks). Keep all crops in training | Phase 1 |
-| 3 | **Bus confused with truck even when large** (M0207 buses over 100 px predicted truck); only 46 bus tracks in all of UAVDT | Add bus and truck examples from another aerial dataset with these classes, grouped by sequence. Weight bus and truck by track, not by crop | Phase 2 |
-| 4 | **Small objects lose detail at 64 px.** 96 px input did not help (-0.016 for full fine-tune) | Try context crops: the box plus a margin, so road and scale are visible. Coordinate with detection (tiling), where small objects are found first | Phase 2 |
-| 5 | **Test is small** (4 SeaDronesSee videos, 9 UAVDT sequences; CI 0.570-0.837) | Add Al-Hada as a held-out test. Report grouped cross-validation over train+val as a second estimate | Al-Hada: Phase 1. CV: Phase 2 |
-| 6 | **SeaDronesSee `rgb` stills** are 41% of test and easier (sea F1 0.887 vs 0.770 on video) | Report test with and without them (done). In Phase 2, give stills their own split, or split them by session if metadata can be recovered | Done; Phase 2 |
-| 7 | **Rare sea classes come from few flights** (life-saving appliances: 2 test videos, F1 0.40, and 0.00 without the stills) | Collect or borrow more varied examples. Until then, report per-class CIs and do not over-read this class | Phase 2 |
+| # | Problem (evidence) | Action | When | Phase 2 status |
+| --- | --- | --- | --- | --- |
+| 1 | **Label errors in test.** 13 of the 50 most confident errors are wrong labels: trucks labelled car in M0208 and M1303, a jetski labelled boat, a boat labelled swimmer | Relabel these 6 objects. Audit every test truck and bus track blind to predictions. Report the score with original and with cleaned labels | Phase 1 (report both); full audit Phase 2 | Blind Step 4 audit (before any prediction): 42 test crops, 33 ok, 7 unsure, 2 bad_box, 0 wrong_class, so 0 corrections. The 6 objects from the 25 Oct audit were not relabelled: they were found after seeing predictions, so relabelling them would bias the score upward. They stay a limitation (Known limitations, 6); the test score is a lower bound. Full truck/bus track audit not done: future work |
+| 2 | **Crops too small to judge.** 21 of 50 errors could not be classified by either rater, most under 15 px; 160/249 test buses are under 32 px with recall 0 | Report test metrics by size bin, plus a score that excludes crops under 16 px as an "ignore" region (standard practice in aerial benchmarks). Keep all crops in training | Phase 1 | Done. Box >= 16 px score in Phase 1 (25 Oct, below); COCO size bins in P04 (1 Nov, see Phase 2 below) |
+| 3 | **Bus confused with truck even when large** (M0207 buses over 100 px predicted truck); only 46 bus tracks in all of UAVDT | Add bus and truck examples from another aerial dataset with these classes, grouped by sequence. Weight bus and truck by track, not by crop | Phase 2 | Cancelled in Phase 2: the model was delivered to integration. Future work |
+| 4 | **Small objects lose detail at 64 px.** 96 px input did not help (-0.016 for full fine-tune) | Try context crops: the box plus a margin, so road and scale are visible. Coordinate with detection (tiling), where small objects are found first | Phase 2 | Not done. Future work |
+| 5 | **Test is small** (4 SeaDronesSee videos, 9 UAVDT sequences; CI 0.570-0.837) | Add Al-Hada as a held-out test. Report grouped cross-validation over train+val as a second estimate | Al-Hada: Phase 1. CV: Phase 2 | Al-Hada done. Grouped CV not done |
+| 6 | **SeaDronesSee `rgb` stills** are 41% of test and easier (sea F1 0.887 vs 0.770 on video) | Report test with and without them (done). In Phase 2, give stills their own split, or split them by session if metadata can be recovered | Done; Phase 2 | Done (with and without `rgb`); no separate split for the stills |
+| 7 | **Rare sea classes come from few flights** (life-saving appliances: 2 test videos, F1 0.40, and 0.00 without the stills) | Collect or borrow more varied examples. Until then, report per-class CIs and do not over-read this class | Phase 2 | Future work |
 
 **Action 2, done 25 Oct.** Computed from the saved Step 8 predictions; no model was re-run. Test macro-F1, raw, mean of 3 seeds:
 
@@ -194,6 +195,27 @@ The plan has seven actions, ordered by expected gain. Every one starts from a me
 - **Size is not the whole story.** Above 64 px, truck recall is still 0.57 and bus recall 0.49, while car stays at 0.94-0.98 at every size. This matches the audit: buses are confused with trucks even when large.
 - **Without the stills and tiny crops, full fine-tuning leads scratch by only 0.008,** which is within seed noise. The claim that ImageNet pretraining helps should be stated with that caveat.
 
-**Action 8 (Phase 2): domain-aware prediction.** Top-2 analysis shows tiny cars predicted as swimmer or boat, and swimmers as cars. In deployment the domain is known (the drone flies over sea or over a road), so predictions can be restricted to that domain's classes. This rests on an explicit assumption, that the domain is known at inference time; it is a deployment rule, not an improvement of the model itself. It must be designed and evaluated on val, not on test.
+**Action 8 (Phase 2): domain-aware prediction.** Top-2 analysis shows tiny cars predicted as swimmer or boat, and swimmers as cars. In deployment the domain is known (the drone flies over sea or over a road), so predictions can be restricted to that domain's classes. This rests on an explicit assumption, that the domain is known at inference time; it is a deployment rule, not an improvement of the model itself. It must be designed and evaluated on val, not on test. *Phase 2 status: not done. Future work.*
 
 **Al-Hada.** A second iPhone shoot is planned for November, with a written brief: SDR not HDR, 4K, no zoom, several vantage points at different heights and angles, busy hours, and a target of 100 or more trucks and buses. It will extend the mountain test set and add the large-vehicle examples the current clips lack.
+
+## Phase 2: deployment export and size analysis
+
+**Export (P03, 31 Oct).** The selected checkpoint (full fine-tune, lr 0.002, seed 43; raw logits, no logit bias) was exported for integration to `02_Classification/Export/2026-10-31_ClsResNet18_s43_v1`.
+
+- ONNX opset 17. Parity on the 13,800 val crops, max abs logit diff: 8.3e-6 on CPU, 2.5e-5 on CUDA; 0 argmax flips.
+- Val macro-F1 0.8233 in PyTorch, ONNX CPU and ONNX CUDA.
+- `square()` reproduces the training crops exactly: 200 val crops (100 SeaDronesSee + 100 UAVDT) re-cut from the raw frames, max pixel diff 0.
+- Latency on T4, p95. Model alone: 4.5 ms at batch 1, 7.9 ms at batch 32. `classify()`: 21.2 ms with 20 boxes, 88.0 ms with 100 boxes (p99 108.5 ms). Most of the time goes to cropping on the CPU.
+
+**Size analysis (P04, 1 Nov; third logged opening of test, report only).** Size = sqrt(w*h) in pixels of the original frame; COCO bins small < 32, medium 32 to < 96, large >= 96. Single checkpoint (seed 43), so not directly comparable with the 3-seed means above. Macro-F1 over the classes present in each bin:
+
+| Rows | small | medium | large | all |
+| --- | --- | --- | --- | --- |
+| val, all | 0.740 | 0.819 | 0.844 | 0.823 |
+| test, all without `rgb` (headline) | 0.532 | 0.740 | 0.746 | 0.694 |
+| test, all | 0.510 | 0.814 | 0.717 | 0.756 |
+
+- On test UAVDT, small buses are predicted car in 93% of cases (recall 0.006), and 46% of large buses are still predicted car. Truck to car: 62% small, 44% medium.
+- Test UAVDT large (0.508) holds 88 crops only, with a single truck; it cannot be read as performance.
+- Outputs: `02_Classification/P04/2026-11-01_SizeBins_v1`. Notebooks: `notebooks/track1/export_onnx_2026-10-30.ipynb` (commit b553422), `notebooks/track1/p04_size_bins_label_fix_2026-11-01.ipynb` (commit 35048fb).
