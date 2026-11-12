@@ -1,12 +1,12 @@
 # Track 1 results: aerial vehicle and vessel classification (Phase 1)
 
-The selected model is **ResNet18 (ImageNet), fully fine-tuned at lr 0.002, on 64 px crops**. It was chosen on the validation set before the test set was opened. Every opening of the test set is logged in `TestLog.csv`: once on 23 Oct for the scores below, and once on 25 Oct, report-only, to add top-k accuracy (same checkpoints, nothing tuned).
+The selected model is **ResNet18 (ImageNet), fully fine-tuned at lr 0.002, on 64 px crops**. It was chosen on the validation set before the test set was opened. Every opening of the test set is logged in `TestLog.csv`: three times so far: 23 Oct for the scores below, 25 Oct (report-only, to add top-k accuracy, same checkpoints, nothing tuned), and 1 Nov (P04, report-only: size bins and audit label fix, selected model seed 43, raw logits, nothing tuned). The log is committed as `reports/track1/TestLog.csv`.
 
 **Headline test score: raw macro-F1 0.679 ± 0.013 without the SeaDronesSee `rgb` stills (group-bootstrap 95% CI 0.523–0.874).** The `rgb` stills share a drone (`trinity`) with a train group, so the full-test score (0.733) is reported as secondary. See the sensitivity section below.
 
 Every number below is the mean ± std over 3 seeds (42, 43, 44). The Adjusted column applies a per-class logit bias. That bias is fitted on val and applied to test unchanged.
 
-## Test (13,551 crops: 4 SeaDronesSee videos, 9 UAVDT sequences)
+## Test (13,551 crops: 4 SeaDronesSee groups (3 videos and the `rgb` stills), 9 UAVDT sequences)
 
 | Model | Macro-F1 (raw) | Macro-F1 (adjusted) | Accuracy | ECE |
 |---|---|---|---|---|
@@ -49,7 +49,25 @@ This table was computed from the saved Step 8 predictions. The models were not r
 | M3 ResNet18 frozen | Without `rgb` | 0.882 | 0.952 | 0.973 | 0.078 |
 
 - The largest top-2 gain is truck predicted as car. A substantial share are cross-domain confusions of tiny objects (car ↔ swimmer, car → boat).
-- The logit bias raises macro-F1 only within noise, but lowers top-1 (0.934 → 0.927) and worsens ECE (0.020 → 0.045). Raw scores are the headline.
+- The logit bias raises macro-F1 only within noise on test. Raw scores are the headline; the decision rests on validation, not on these test numbers (see the next section).
+
+## Acceptance criterion and raw vs adjusted rule (P23, written 12 Nov 2026)
+
+This text was written on 12 Nov, after the test openings of 23 and 25 Oct. It is not a pre-registered gate for those runs. It is fixed before any further opening of test (P26), and later openings are judged against it.
+
+**Selection.** The model is selected by mean validation macro-F1 over 3 seeds. Test is never used to select, tune, or choose between raw and adjusted scores.
+
+**Acceptance (validation unless stated).**
+1. Mean val macro-F1 >= 0.80. The selected model reaches 0.817.
+2. Sea and urban val macro-F1 are both reported (0.915 and 0.654). Urban is not gated; the gap is stated.
+3. Test macro-F1 (full test and without `rgb`) is reported once per opening with its group-bootstrap CI. It is not an acceptance gate.
+4. Reproduction (P26): the exported ONNX reproduces the logged test predictions with 0 argmax flips and test macro-F1 within 0.01 of the logged value.
+
+**Raw vs logit-adjusted.** Adjusted scores are used only if, on val, all three hold: (1) the macro-F1 gain is at least 0.01 when the bias is fitted on one half of the val groups and scored on the other half (both directions, 10 random splits of the 12 groups); (2) accuracy drops by at most 0.005; (3) ECE worsens by at most 0.01. Otherwise raw is the headline.
+
+**Result (`2026-11-12_P23_ValAdjustCheck_v1.csv`, full fine-tune lr 0.002, mean of seeds 42/43/44).** The bias gains +0.016 macro-F1 in-sample (0.817 to 0.833) but -0.011 cross-fit; accuracy drops by 0.0007; val ECE worsens from 0.022 to 0.057. Conditions (1) and (3) fail, so **raw logits are the headline**.
+
+**Disclosure.** P04 opened test with raw scores before this rule existed, and the earlier raw choice was justified with test accuracy and ECE (0.934 to 0.927, 0.020 to 0.045). That justification is withdrawn. The decision above rests on validation only.
 
 ## Validation (used for every choice)
 

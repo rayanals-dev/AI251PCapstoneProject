@@ -8,6 +8,10 @@ Input: Images or video frames recorded from an aerial or elevated viewpoint (UAV
 Output: Detected objects with class, confidence, bounding box, mask and estimated object size, shown on annotated imagery for human confirmation.
 
 
+## Experiment tracking
+
+Track 1 (classification, Phase 1) runs, curves and the comparison are in the Weights & Biases report: [Track 1 Classification Phase 1](https://forge.coreweave.com/wandb/mason-alharthi-king-abdullah-university-of-science-and-/ai251p-capstone/reports/Track-1-Classification-Phase-1-CrossDomainAerial---VmlldzoxODE4NDcwMw?accessToken=elgsyylxxahwmffxkj6rqvusvrn2lxvx9x9fcdvr2kvrm6gmtjmspfvbg2190hhd). Test openings are logged in `reports/track1/TestLog.csv`; numbers and rules are in `reports/track1/README.md`.
+
 ## Project Team Members:
 
 Abdulmohsen Alharthi

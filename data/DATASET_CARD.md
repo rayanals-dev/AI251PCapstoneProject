@@ -8,7 +8,7 @@ This card describes the data used for Track 1 (aerial object classification, Pha
 
 | Dataset | Domain | What we used | Licence | Source |
 | --- | --- | --- | --- | --- |
-| SeaDronesSee, Object Detection v2 | Sea (search and rescue) | 39 video groups (flights) plus 2 still-image groups; train and val annotations (14,227 images on disk) | CC0 | [seadronessee.cs.uni-tuebingen.de](https://seadronessee.cs.uni-tuebingen.de/dataset) |
+| SeaDronesSee, Object Detection v2 | Sea (search and rescue) | 37 videos (flights) plus 2 still-image groups (`multispectral`, `rgb`), 39 split groups in all; train and val annotations (14,227 images on disk) | CC0 | [seadronessee.cs.uni-tuebingen.de](https://seadronessee.cs.uni-tuebingen.de/dataset) |
 | UAVDT Benchmark-M | Urban roads | 50 sequences, 40,735 frames in the release; 40,733 after removing 2 exact duplicate frames (used in every split); sampled at 5 fps; per-sequence attributes (weather, altitude, view) | Research use, per authors | [UAVDT project page](https://sites.google.com/view/grli-uavdt/) |
 | Al-Hada road (ours) | Mountain road | 2 iPhone clips from public viewpoints above the road, 312 frames at 1 fps; held-out test only, never trained on | Private, owner only | Not public |
 
@@ -74,8 +74,8 @@ The split is by group, never by image, so no flight and no sequence appears in t
 
 |  | SeaDronesSee | UAVDT-M |
 | --- | --- | --- |
-| Group unit | Video (flight) | Sequence |
-| Groups train / val / test | 30 / 5 / 4 | 34 / 7 / 9 |
+| Group unit | Video (flight); the 2 still-image groups count as one group each | Sequence |
+| Groups train / val / test | 30 / 5 / 4 (37 videos + 2 still groups = 39) | 34 / 7 / 9 |
 | Rule | Each class within +-8% of 70/15/15 | Val and test each hold >= 5 truck and bus tracks |
 | Note | Only 1 of 50,000 random assignments met every rule: the split is fragile | Grouping by site prefix (M01-M14) failed, so the split falls back to sequences |
 
@@ -106,14 +106,14 @@ The ranking is the same either way, but the intervals overlap, so the difference
 | ResNet18 frozen | Without `rgb` | 0.882 | 0.952 | 0.973 | 0.078 |
 
 - **Where top-2 helps.** It recovers about 4.5 points. The largest single source is truck predicted as car (147-161 crops per seed). A substantial share are cross-domain confusions of tiny objects (car to swimmer, swimmer to car, car to boat), and within the sea domain, life-saving appliances to swimmer and swimmer to buoy.
-- **Logit adjustment.** The per-class bias raises macro-F1 only within noise (0.733 to 0.738 on the full test, 0.679 to 0.688 without `rgb`), but lowers top-1 accuracy (0.934 to 0.927) and worsens calibration (ECE 0.020 to 0.045). Raw scores are therefore the headline.
+- **Logit adjustment.** On test the per-class bias raises macro-F1 only within noise (0.733 to 0.738 on the full test, 0.679 to 0.688 without `rgb`). Raw scores are the headline, decided on validation only (P23, 12 Nov): the bias gains +0.016 macro-F1 in-sample but -0.011 when fitted on half of the val groups and scored on the other half, and worsens val ECE from 0.022 to 0.057. The earlier justification with test accuracy and ECE is withdrawn. See `reports/track1/README.md` for the rule.
 - **Calibration.** The frozen backbone is the worst calibrated model (ECE about 0.08). The selected model's confidence tracks its accuracy closely (ECE 0.02).
 
 ## Known limitations
 
 1. **Small vehicles.** 63.6% of UAVDT cars are under 32 px, and so are 47.4% of SeaDronesSee swimmers. In the test, 160 of the 249 buses are under 32 px, and recall on them is 0.
 2. **One sequence holds most of the bus failure.** M0602 contains those same 160 buses: 64% of all test buses. Its test error rate is 38%, against 2.5-12.5% for most other sequences. Its UAVDT attributes (daylight, medium altitude, front view) match three sequences that score about 10%, and the night sequence M0206 scores 9%. The cause is object size, not weather or light.
-3. **Small test at group level.** The test holds 4 SeaDronesSee videos and 9 UAVDT sequences. Group-bootstrap 95% CI for the selected model's macro-F1: 0.570-0.837 on the full test, and 0.523-0.874 without rgb (12 groups). Crop-level intervals are too narrow, because crops from one video are correlated.
+3. **Small test at group level.** The test holds 4 SeaDronesSee groups (3 videos and the `rgb` stills) and 9 UAVDT sequences. Group-bootstrap 95% CI for the selected model's macro-F1: 0.570-0.837 on the full test, and 0.523-0.874 without rgb (12 groups). Crop-level intervals are too narrow, because crops from one video are correlated.
 4. **Rare classes come from few groups.** Jetski, life-saving appliances and buoy each come from only 2 videos in val and 2 in test, and one of the two test groups is rgb. Without rgb each rests on a single video, so its interval means nothing. Life-saving appliances fall from F1 0.40 to 0.00 on all 3 seeds: every correct prediction for this class came from the stills. This is a shift between flights inside SeaDronesSee, not label noise: what the model learned for this class from its training flights did not transfer to the other test video.
 5. **UAVDT site leakage risk.** Sequences that share a site prefix can land in different splits, so UAVDT val and test scores may be optimistic.
 6. **UAVDT label noise in test.** Some box trucks are labelled car (M1303), and a billboard is labelled truck (M0602). These count as model errors in our scores. A blind audit of the 50 most confident test errors (25 Oct, 2 raters, 94% agreement) found the label wrong and the model right in 13 of them (26%, 6 distinct objects). Another 21 (42%) could not be judged by either rater, and most of those are under 15 px. Only 16 (32%) were clear model errors. The reported test score is therefore a lower bound. Sea classes were judged by one rater with the class definitions, because the second rater lacked domain familiarity.
@@ -178,7 +178,7 @@ The plan has seven actions, ordered by expected gain. Every one starts from a me
 | 2 | **Crops too small to judge.** 21 of 50 errors could not be classified by either rater, most under 15 px; 160/249 test buses are under 32 px with recall 0 | Report test metrics by size bin, plus a score that excludes crops under 16 px as an "ignore" region (standard practice in aerial benchmarks). Keep all crops in training | Phase 1 | Done. Box >= 16 px score in Phase 1 (25 Oct, below); COCO size bins in P04 (1 Nov, see Phase 2 below) |
 | 3 | **Bus confused with truck even when large** (M0207 buses over 100 px predicted truck); only 46 bus tracks in all of UAVDT | Add bus and truck examples from another aerial dataset with these classes, grouped by sequence. Weight bus and truck by track, not by crop | Phase 2 | Cancelled in Phase 2: the model was delivered to integration. Future work |
 | 4 | **Small objects lose detail at 64 px.** 96 px input did not help (-0.016 for full fine-tune) | Try context crops: the box plus a margin, so road and scale are visible. Coordinate with detection (tiling), where small objects are found first | Phase 2 | Not done. Future work |
-| 5 | **Test is small** (4 SeaDronesSee videos, 9 UAVDT sequences; CI 0.570-0.837) | Add Al-Hada as a held-out test. Report grouped cross-validation over train+val as a second estimate | Al-Hada: Phase 1. CV: Phase 2 | Al-Hada done. Grouped CV not done |
+| 5 | **Test is small** (4 SeaDronesSee groups: 3 videos and the `rgb` stills; 9 UAVDT sequences; CI 0.570-0.837) | Add Al-Hada as a held-out test. Report grouped cross-validation over train+val as a second estimate | Al-Hada: Phase 1. CV: Phase 2 | Al-Hada done. Grouped CV not done |
 | 6 | **SeaDronesSee `rgb` stills** are 41% of test and easier (sea F1 0.887 vs 0.770 on video) | Report test with and without them (done). In Phase 2, give stills their own split, or split them by session if metadata can be recovered | Done; Phase 2 | Done (with and without `rgb`); no separate split for the stills |
 | 7 | **Rare sea classes come from few flights** (life-saving appliances: 2 test videos, F1 0.40, and 0.00 without the stills) | Collect or borrow more varied examples. Until then, report per-class CIs and do not over-read this class | Phase 2 | Future work |
 
