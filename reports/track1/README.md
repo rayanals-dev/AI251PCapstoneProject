@@ -87,6 +87,20 @@ This text was written on 12 Nov, after the test openings of 23 and 25 Oct. It is
 - **One sequence dominates the errors:** UAVDT M0602 holds 435 of the 1,077 errors.
 - **Some errors are label noise, not model mistakes:** box trucks in M1303 are labelled car, and a billboard in M0602 is labelled truck.
 
+## UAVDT site overlap (P25, 12 Nov 2026)
+
+UAVDT was split by sequence, not by site (site = first three characters of the sequence name, e.g. M0602 -> M06). From the saved 23 Oct predictions (no new test opening, nothing tuned), 4 of the 5 test sites (M02, M04, M06, M13) also appear in train, covering 77% of the 3,982 UAVDT test crops. Only M08 (2 sequences, 925 crops) is unseen. All 5 val sites also appear in train.
+
+| UAVDT test subset (macro-F1 over car/truck/bus, mean of 3 seeds) | Crops | Macro-F1 |
+|---|---|---|
+| Sites seen in train (7 sequences) | 3,057 | 0.464 (sequence-bootstrap 95% CI 0.338–0.634) |
+| Unseen site M08 (2 sequences) | 925 | 0.876 |
+| M06 alone (seen) | 893 | 0.289 |
+
+- We find no evidence that the site overlap inflated the UAVDT score: the only unseen site scores higher than the seen ones.
+- This does not show the overlap is harmless. The unseen group is one site with 25 buses, and site difficulty (M06 above) dominates. The current split cannot measure generalisation to new sites; a site-grouped split is planned after Phase 2.
+- Details: `P25_site_analysis.md`, script `scripts/p25_uavdt_site_analysis.py`.
+
 ## Held-out mountain road (Al-Hada, 26 Oct)
 
 300 frames from two iPhone clips filmed from public viewpoints above a mountain road, 9,484 vehicle crops (8,885 car / 543 truck / 56 bus). Never used for training or tuning; the four models were run once, raw, and a predicted sea class counts as an error. Macro-F1 over car, truck and bus, mean ± std over 3 seeds:
@@ -104,6 +118,7 @@ Cars transfer (F1 0.94); trucks (0.06) and buses (0.00) do not: 90% of trucks an
 
 - `2026-10-23_Track1Comparison_v2.csv`: the test table above, with the sea and urban subsets and the per-model numbers.
 - `2026-10-26_WandbRuns_v1.csv`: export of every Track 1 W&B run (config and summary metrics). The W&B project itself is private (plan restriction); a read-only public report with the learning curves and run tables is linked in the main README.
+- `P25_site_analysis.md`, `P25_UAVDT_SiteMetrics.csv`, `P25_SiteSplitTable.csv`: UAVDT site-level analysis from the saved test predictions (P25).
 - Configs: `configs/cls_scratch.yaml`, `configs/cls_frozen.yaml`, `configs/cls_full.yaml` (selected model), `configs/cls_full_lrcheck.yaml` (LR check, 23 Oct). They are the exact files the training notebook writes.
 - Notebooks and cells in `notebooks/track1/`:
   - `train_cls_2026-10-25.ipynb`: training for all three models (pick the config in section 0). `VERIFY_ONLY = True` reloads the finished runs without training, logging or reading test.
