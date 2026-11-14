@@ -1,6 +1,6 @@
 # Track 1 results: aerial vehicle and vessel classification (Phase 1)
 
-The selected model is **ResNet18 (ImageNet), fully fine-tuned at lr 0.002, on 64 px crops**. It was chosen on the validation set before the test set was opened. Every opening of the test set is logged in `TestLog.csv`: three times so far: 23 Oct for the scores below, 25 Oct (report-only, to add top-k accuracy, same checkpoints, nothing tuned), and 1 Nov (P04, report-only: size bins and audit label fix, selected model seed 43, raw logits, nothing tuned). The log is committed as `reports/track1/TestLog.csv`.
+The selected model is **ResNet18 (ImageNet), fully fine-tuned at lr 0.002, on 64 px crops**. It was chosen on the validation set before the test set was opened. Every opening of the test set is logged in `TestLog.csv`: four times so far: 23 Oct for the scores below, 25 Oct (report-only, to add top-k accuracy, same checkpoints, nothing tuned), 1 Nov (P04, report-only: size bins and audit label fix, selected model seed 43, raw logits, nothing tuned), and 14 Nov (P26, report-only: ONNX reproduction of the logged predictions, nothing tuned). The log is committed as `reports/track1/TestLog.csv`.
 
 **Headline test score: raw macro-F1 0.679 ± 0.013 without the SeaDronesSee `rgb` stills (group-bootstrap 95% CI 0.523–0.874).** The `rgb` stills share a drone (`trinity`) with a train group, so the full-test score (0.733) is reported as secondary. See the sensitivity section below.
 
@@ -69,6 +69,20 @@ This text was written on 12 Nov, after the test openings of 23 and 25 Oct. It is
 
 **Disclosure.** P04 opened test with raw scores before this rule existed, and the earlier raw choice was justified with test accuracy and ECE (0.934 to 0.927, 0.020 to 0.045). That justification is withdrawn. The decision above rests on validation only.
 
+## ONNX reproduction of the test predictions (P26, 14 Nov 2026)
+
+The exported model (`2026-10-31_ClsResNet18_s43_v1/model.onnx`, sha256 checked against `export_report.json`) was run once on the 13,551 test crops and compared with the predictions logged on 23 Oct (`fullFT_s43_raw`). Raw logits, nothing tuned. The opening was written to `TestLog.csv` before the test crops were read. **The run was made by the model owner (Abdulmohsen Alharthi), so it is a verification of the export, not an independent reproduction.**
+
+| Case | Crops | Macro-F1 logged | Macro-F1 ONNX | Abs. diff | Argmax flips |
+|---|---|---|---|---|---|
+| All test | 13,551 | 0.755887 | 0.756018 | 0.000131 | 1 |
+| Without `rgb` (headline) | 8,002 | 0.694071 | 0.694071 | 0.000000 | 0 |
+
+- **Acceptance criterion 4 is met on macro-F1 (difference 0.0001, limit 0.01) and not met on argmax flips (1 flip, limit 0).** We report it as it is and do not change the criterion.
+- The single flip is crop 53062 (`rgb` stills, true class boat): logged bus, ONNX boat. The ONNX top-2 logit margin is 0.0019, a near-tie. The export acceptance of 31 Oct tolerated flips only below a 0.002 margin; this flip falls in that band.
+- Library versions differ from the export run (torch 2.14.1 vs 2.11.0, onnxruntime 1.32.0 vs 1.31.1; CUDA provider, T4), which is the likely source of the difference.
+- Files: `2026-11-14_P26_OnnxTestRepro_v1.csv`, `2026-11-14_P26_OnnxTestFlips_v1.csv`, cell `notebooks/track1/p26_onnx_test_repro_cell_2026-11-14.py`.
+
 ## Validation (used for every choice)
 
 | Model | Macro-F1 (raw) | Macro-F1 (adjusted) |
@@ -119,6 +133,7 @@ Cars transfer (F1 0.94); trucks (0.06) and buses (0.00) do not: 90% of trucks an
 - `2026-10-23_Track1Comparison_v2.csv`: the test table above, with the sea and urban subsets and the per-model numbers.
 - `2026-10-26_WandbRuns_v1.csv`: export of every Track 1 W&B run (config and summary metrics). The W&B project itself is private (plan restriction); a read-only public report with the learning curves and run tables is linked in the main README.
 - `P25_site_analysis.md`, `P25_UAVDT_SiteMetrics.csv`, `P25_SiteSplitTable.csv`: UAVDT site-level analysis from the saved test predictions (P25).
+- `2026-11-14_P26_OnnxTestRepro_v1.csv`, `2026-11-14_P26_OnnxTestFlips_v1.csv`: ONNX reproduction of the logged test predictions (P26).
 - Configs: `configs/cls_scratch.yaml`, `configs/cls_frozen.yaml`, `configs/cls_full.yaml` (selected model), `configs/cls_full_lrcheck.yaml` (LR check, 23 Oct). They are the exact files the training notebook writes.
 - Notebooks and cells in `notebooks/track1/`:
   - `train_cls_2026-10-25.ipynb`: training for all three models (pick the config in section 0). `VERIFY_ONLY = True` reloads the finished runs without training, logging or reading test.
@@ -126,6 +141,7 @@ Cars transfer (F1 0.94); trucks (0.06) and buses (0.00) do not: 90% of trucks an
   - `test_norgb_cell_2026-10-25.py`: test without `rgb` and its group-bootstrap CI, from the saved predictions only.
   - `rebuild_full_s42_s44_cell_2026-10-25.py`: rebuilt two finished-run summary files of cls-full from the saved checkpoint, history and val predictions (no training, no test).
   - `alhada_eval_v2_cell_2026-10-26.py`: the Al-Hada evaluation.
+  - `p26_onnx_test_repro_cell_2026-11-14.py`: the report-only fourth test opening (P26); logs the opening before reading test.
   - `report_figures_cell_2026-10-26.py`, `error_gallery_v2_cell_2026-10-26.py`: the report figures, from saved files only.
   - The original Step 8 test notebook is kept on the team Drive and is not re-run.
 - `figures/`: the four report figures (learning curves, confusion matrix, reliability diagram, error gallery) as PDF.
