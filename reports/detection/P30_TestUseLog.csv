@@ -1,0 +1,1 @@
+2026-11-17 22:03,P30,"saved P09 test predictions (Joint_StrongerAug, conf 0.001)","report-only: P/R/F1 and FP breakdown at the val-chosen thresholds {'sea': np.float64(0.2), 'urban': np.float64(0.05)}; nothing tuned"

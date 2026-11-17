@@ -1,0 +1,9 @@
+domain,type,count,share
+sea,background,487,0.096
+sea,duplicate,478,0.094
+sea,localization,2813,0.552
+sea,wrong class,1321,0.259
+urban,background,10304,0.82
+urban,duplicate,678,0.054
+urban,localization,1053,0.084
+urban,wrong class,524,0.042
