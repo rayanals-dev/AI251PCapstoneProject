@@ -1,0 +1,3 @@
+case,n_crops,macro_f1_logged,macro_f1_onnx,abs_diff,argmax_flips,pass,run_by,when_utc,providers,preprocess_device,onnxruntime,torch
+all test,13551,0.755887,0.756018,0.000131,1,False,Abdulelah Alkhamis,2026-11-17 19:27,CUDAExecutionProvider+CPUExecutionProvider,cuda,1.32.0,2.14.1+cu130
+without rgb,8002,0.694071,0.694071,0.0,0,True,Abdulelah Alkhamis,2026-11-17 19:27,CUDAExecutionProvider+CPUExecutionProvider,cuda,1.32.0,2.14.1+cu130

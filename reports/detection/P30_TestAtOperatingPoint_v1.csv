@@ -1,0 +1,5 @@
+domain,setting,thr,tp,fp,fn,precision,recall,f1,f2
+sea,conf 0.001 (P09 check),0.001,5242,48435,4327,0.0977,0.5478,0.1658,0.285
+sea,operating point (val),0.2,4850,5099,4719,0.4875,0.5068,0.497,0.5029
+urban,conf 0.001 (P09 check),0.001,14649,75146,3476,0.1631,0.8082,0.2715,0.4513
+urban,operating point (val),0.05,13215,12559,4910,0.5127,0.7291,0.6021,0.6724

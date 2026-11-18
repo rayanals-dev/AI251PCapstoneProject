@@ -1,0 +1,9 @@
+domain,class,tp,fp,fn,precision,recall
+sea,swimmer,1863,4614,3092,0.2876,0.376
+sea,boat,2094,143,1112,0.9361,0.6532
+sea,jetski,320,205,94,0.6095,0.7729
+sea,life_saving_appliance,5,42,179,0.1064,0.0272
+sea,buoy,568,94,242,0.858,0.7012
+urban,car,13032,11535,4325,0.5305,0.7508
+urban,truck,77,336,259,0.1864,0.2292
+urban,bus,106,142,326,0.4274,0.2454

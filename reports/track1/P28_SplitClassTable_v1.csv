@@ -1,0 +1,9 @@
+dataset,category,train,val,test
+SeaDronesSee,boat,9707,2319,3206
+SeaDronesSee,buoy,3476,659,810
+SeaDronesSee,jetski,1793,443,414
+SeaDronesSee,life_saving_appliances,856,213,184
+SeaDronesSee,swimmer,32238,6093,4955
+UAVDT,bus,1313,163,144
+UAVDT,car,14233,4303,4204
+UAVDT,truck,1844,374,332
