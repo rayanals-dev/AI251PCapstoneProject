@@ -1,0 +1,27 @@
+[
+ {
+  "check": "detector sha256",
+  "expected": "12089000a5be6b30df3ab2535e3566ba28ce9b2eb799e42f0e166c8612548582",
+  "actual": "12089000a5be6b30df3ab2535e3566ba28ce9b2eb799e42f0e166c8612548582",
+  "pass": true
+ },
+ {
+  "check": "classifier sha256",
+  "expected": "7a82f8742aad3db7848bfc9740735262fac2c7b0c533d16689d67e1493a42b8b",
+  "actual": "7a82f8742aad3db7848bfc9740735262fac2c7b0c533d16689d67e1493a42b8b",
+  "pass": true
+ },
+ {
+  "check": "segmentation sha256",
+  "expected": "264be4d7974ee7e5830d095c15312b78ea97410def49ef17817aa941db863953",
+  "actual": "264be4d7974ee7e5830d095c15312b78ea97410def49ef17817aa941db863953",
+  "pass": true
+ },
+ {
+  "check": "start-up image",
+  "objects": 44,
+  "with_mask": 30,
+  "ms": 381.6,
+  "pass": true
+ }
+]

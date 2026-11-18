@@ -1,0 +1,58 @@
+{
+ "created": "2026-11-18",
+ "version": "Pipeline_v2",
+ "based_on": "04_Integration/2026-11-16_Pipeline_v1/manifest.json (Rayan Alsulami); v2 adds sha256 per model, the validation operating point per domain, and the segmentation weights copied into the release",
+ "root": "AI251P_Capstone_CrossDomainAerial (paths below are relative to it)",
+ "stages": {
+  "detector": {
+   "checkpoint": "03_Detection/2026-11-04_P08_Baseline/YOLO11n_Joint_StrongerAug/weights/best.pt",
+   "sha256": "12089000a5be6b30df3ab2535e3566ba28ce9b2eb799e42f0e166c8612548582",
+   "conf_by_domain": {
+    "sea": 0.2,
+    "urban": 0.05
+   },
+   "conf_source": "P30: max F2 on validation, grid 0.05-0.95 (03_Detection/2026-11-06_P09_Evaluation/P30_OperatingPoint/P30_OperatingPoint_v1.json)",
+   "nms_iou": 0.7,
+   "imgsz": 640,
+   "classes": [
+    "swimmer",
+    "boat",
+    "jetski",
+    "life_saving_appliance",
+    "buoy",
+    "car",
+    "truck",
+    "bus"
+   ]
+  },
+  "classifier": {
+   "checkpoint": "02_Classification/Export/2026-10-31_ClsResNet18_s43_v1/model.onnx",
+   "sha256": "7a82f8742aad3db7848bfc9740735262fac2c7b0c533d16689d67e1493a42b8b",
+   "classes": [
+    "swimmer",
+    "boat",
+    "jetski",
+    "life_saving_appliances",
+    "buoy",
+    "car",
+    "truck",
+    "bus"
+   ],
+   "input": "64 px square crop, raw logits, argmax"
+  },
+  "segmentation": {
+   "checkpoint": "04_Integration/2026-11-18_Pipeline_v2/models/seg_last.pt",
+   "copied_from": "Ziyad_folder/yolo11n_seg_1280-3/weights/last.pt",
+   "sha256": "264be4d7974ee7e5830d095c15312b78ea97410def49ef17817aa941db863953",
+   "backend": "yolo-seg",
+   "conf": 0.25,
+   "imgsz": 1280,
+   "match_iou": 0.3
+  }
+ },
+ "size": {
+  "altitude_m": null,
+  "hfov_deg": null,
+  "from": "mask (area, minimum-area rectangle) else box"
+ }
+}

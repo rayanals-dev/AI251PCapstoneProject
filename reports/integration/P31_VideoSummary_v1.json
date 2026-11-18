@@ -1,0 +1,19 @@
+{
+ "device": "Tesla T4",
+ "clip": "Service/2026-11-16_Service_v1/example_clip.mp4 (Al-Hada)",
+ "source_fps": 5.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "frames": 20,
+ "every_frame": true,
+ "det_conf": 0.05,
+ "objects_per_frame_mean": 49.8,
+ "objects_with_mask": 608,
+ "objects_total": 995,
+ "pipeline_ms_mean": 165.0,
+ "pipeline_ms_p95": 192.8,
+ "processing_fps_pipeline_only": 6.06,
+ "processing_fps_end_to_end_incl_read_draw_write": 4.2
+}

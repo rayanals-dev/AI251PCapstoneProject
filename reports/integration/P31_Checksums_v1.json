@@ -1,0 +1,20 @@
+{
+ "sha256": {
+  "detector_best_pt": "12089000a5be6b30df3ab2535e3566ba28ce9b2eb799e42f0e166c8612548582",
+  "classifier_model_onnx": "7a82f8742aad3db7848bfc9740735262fac2c7b0c533d16689d67e1493a42b8b",
+  "segmentation_last_pt": "264be4d7974ee7e5830d095c15312b78ea97410def49ef17817aa941db863953"
+ },
+ "paths": {
+  "detector": "03_Detection/2026-11-04_P08_Baseline/YOLO11n_Joint_StrongerAug/weights/best.pt",
+  "classifier": "02_Classification/Export/2026-10-31_ClsResNet18_s43_v1/model.onnx",
+  "segmentation": "Ziyad_folder/yolo11n_seg_1280-3/weights/last.pt"
+ },
+ "versions": {
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "ultralytics": "8.4.215",
+  "onnxruntime": "1.32.0",
+  "opencv": "4.14.0",
+  "gpu": "Tesla T4"
+ }
+}
