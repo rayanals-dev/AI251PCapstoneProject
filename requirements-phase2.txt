@@ -1,0 +1,13 @@
+# Phase 2 (integration and deployment), Google Colab, Tesla T4, 16-17 Nov 2026.
+# Versions as printed by the runs of notebooks/detection/export_detector_onnx.ipynb and notebooks/integration/*.ipynb.
+# Preinstalled on Colab at the time (not installed by the notebooks): python 3.13.16, torch 2.14.1+cu130, opencv 4.14.0, numpy, pandas.
+# Phase 1 (Track 1 classification) keeps its own pins in requirements.txt.
+
+ultralytics==8.4.215
+onnx==1.23.2
+onnxslim==0.1.99
+onnxruntime-gpu==1.32.0
+# service.ipynb only (versions not recorded by the 16 Nov run; pin after the next run with: pip show fastapi uvicorn python-multipart)
+fastapi
+uvicorn
+python-multipart
